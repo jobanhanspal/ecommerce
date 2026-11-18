@@ -1,30 +1,36 @@
 import axios from 'axios'
-import { Header } from '../components/Header'
-import { useEffect, useState } from 'react'
-import { formatMoney } from '../utils/money'
+import { formatMoney } from '../../utils/money'
+import { useState } from 'react'
 
-const HomePage = ({cart, loadCart}) => {
+const ProductsGrid = ({products, loadCart}) =>{
+            
+    return(
+        <>
+        {products.map((product)=>{
+            
+            const [quantity, setQuantity] = useState(1);
+            const [showAdded, setShowAdded] = useState(false);
 
-  const [products, setProducts] = useState([]);
-  useEffect(()=>{
-    axios.get('/api/products').then((response) => {
-        setProducts(response.data);
-    });
+            const addToCart = async () =>{
+                  await axios.post('/api/cart-items', {
+                    productId: product.id,
+                    quantity
+                  });
+                  await loadCart();
+                  setShowAdded(true);
 
-    axios.get('/api/cart-items').then((response) =>{
-      setCart(response.data)
-    })
-  }, []);
-  
-  return (
-    <>
+                  setTimeout(() => {
+                    setShowAdded(false);
+                  }, 2000);
+            }
 
-      <title>Ecommerce Project</title>
-      <Header cart={cart} />
-      <div className="home-page">
-        <div className="products-grid">
-          {products.map((product)=>{
+            const selectQuantity = (e)=>{
+                    const selectedQuantity = Number(e.target.value);
+                    setQuantity(selectedQuantity);
+            }
+
             return(
+                
                <div className="product-container" key={product.id}>
                 <div className="product-image-container">
                   <img className="product-image"
@@ -48,7 +54,7 @@ const HomePage = ({cart, loadCart}) => {
                 </div>
 
                 <div className="product-quantity-container">
-                  <select>
+                  <select value={quantity} onChange={selectQuantity}>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -64,28 +70,19 @@ const HomePage = ({cart, loadCart}) => {
 
                 <div className="product-spacer"></div>
 
-                <div className="added-to-cart">
+                <div className="added-to-cart" style={{opacity: showAdded ? 1 : 0 }}>
                   <img src="images/icons/checkmark.png" />
                   Added
                 </div>
 
                 <button className="add-to-cart-button button-primary"
-                onClick={()=>{
-                  axios.post('/api/cart-items', {
-                    productId: product.id,
-                    quantity: 1
-                  });
-                }}>
+                onClick={addToCart}>
                   Add to Cart
                 </button>
               </div>
             )
           })}
-
-        </div>
-      </div>
-    </>
-  )
+        </>
+    )
 }
-
-export default HomePage
+export default ProductsGrid;
