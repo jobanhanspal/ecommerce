@@ -6,7 +6,7 @@ import { useEffect, useState } from "react"
 import dayjs from "dayjs"
 
 
-export const CheckoutPage = ({cart}) => {
+export const CheckoutPage = ({cart, loadCart}) => {
     const [deliveryOptions, setDeliveryOptions] = useState([]);
     const [paymentSummary, setPaymentSummary] = useState(null);
 
@@ -22,7 +22,7 @@ export const CheckoutPage = ({cart}) => {
             setPaymentSummary(response.data);
         }
         fetchCheckoutData();
-    }, []);
+    }, [cart]);
 
     return (
         <>
@@ -37,6 +37,11 @@ export const CheckoutPage = ({cart}) => {
                             const selectedDeliveryOption = deliveryOptions.find((deliveryOption) => {
                                 return deliveryOption.id === cartItem.deliveryOptionId;
                             });
+
+                            const deleteProduct = async () =>{
+                                await axios.delete(`/api/cart-items/${cartItem.productId}`);
+                                await loadCart();
+                            }
 
                             return(
                                  <div key={cartItem.productId} className="cart-item-container">
@@ -63,21 +68,10 @@ export const CheckoutPage = ({cart}) => {
                                                     Update
                                                 </span>
                                                 <span className="delete-quantity-link link-primary"
-                                                onClick={()=>{
-                                                axios.post('/api/cart-items', {
-                                                    productId: product.id,
-                                                    quantity: 0
-                                                });}}>
+                                                onClick={deleteProduct}>
                                                     Delete
                                                 </span>
 
-                                                <button className="add-to-cart-button button-primary"
-                                                onClick={()=>{
-                                                axios.delete('/api/cart-items:productId', {
-                                                    productId: product.id,
-                                                    quantity: 0
-                                                });
-                                                }}>Del</button>
                                             </div>
                                         </div>
 
@@ -92,9 +86,16 @@ export const CheckoutPage = ({cart}) => {
                                                     priceString = `${formatMoney(deliveryOption.priceCents)} - Shipping`;
                                                 }
 
+                                                const updateDeliveryOption = async() =>{
+                                                    await axios.put(`/api/cart-items/${cartItem.productId}`,{
+                                                        deliveryOptionId: deliveryOption.id
+                                                    });
+                                                    await loadCart();
+                                                };
+
                                                 return(
-                                                    <div key={deliveryOption.id} className="delivery-option">
-                                                        <input type="radio" checked={deliveryOption.id === cartItem.deliveryOptionId}
+                                                    <div key={deliveryOption.id} className="delivery-option" onClick={updateDeliveryOption}>
+                                                        <input type="radio" onChange={()=>{}} checked={deliveryOption.id === cartItem.deliveryOptionId}
                                                             className="delivery-option-input"
                                                             name={`delivery-option-${deliveryOption.id}`} />
                                                         <div>
