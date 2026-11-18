@@ -4,6 +4,7 @@ import { CheckoutHeader } from "./CheckoutHeader"
 import './CheckoutPage.css'
 import { useEffect, useState } from "react"
 import dayjs from "dayjs"
+import { useNavigate } from "react-router"
 
 
 export const CheckoutPage = ({cart, loadCart}) => {
@@ -23,6 +24,13 @@ export const CheckoutPage = ({cart, loadCart}) => {
         }
         fetchCheckoutData();
     }, [cart]);
+
+    const navigate = useNavigate();
+    const createOrder = async () =>{
+        await axios.post('/api/orders');
+        loadCart();
+        navigate('/orders');
+    }
 
     return (
         <>
@@ -150,7 +158,7 @@ export const CheckoutPage = ({cart, loadCart}) => {
                                 <div className="payment-summary-money">{formatMoney(paymentSummary.totalCostCents)}</div>
                             </div>
 
-                            <button className="place-order-button button-primary">
+                            <button className="place-order-button button-primary" onClick={createOrder}>
                                 Place your order
                             </button>
                         </div>
