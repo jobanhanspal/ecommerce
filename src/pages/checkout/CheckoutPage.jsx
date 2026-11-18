@@ -10,20 +10,24 @@ export const CheckoutPage = ({cart}) => {
     const [deliveryOptions, setDeliveryOptions] = useState([]);
     const [paymentSummary, setPaymentSummary] = useState(null);
 
-    useEffect(()=>{
-        axios.get('/api/delivery-options?expand=estimatedDeliveryTime').then((response)=>{
-            setDeliveryOptions(response.data);
-        });
+    
 
-        axios.get('/api/payment-summary').then((response)=>{
+    useEffect(()=>{
+        const fetchCheckoutData = async () => {
+            let response = await axios.get('/api/delivery-options?expand=estimatedDeliveryTime');
+            setDeliveryOptions(response.data);
+            setDeliveryOptions(response.data);
+
+            response = await axios.get('/api/payment-summary');
             setPaymentSummary(response.data);
-        })
+        }
+        fetchCheckoutData();
     }, []);
 
     return (
         <>
         <title>Checkout</title>
-            <CheckoutHeader />
+            <CheckoutHeader cart={cart} />
             <div className="checkout-page">
                 <div className="page-title">Review your order</div>
 
@@ -58,9 +62,22 @@ export const CheckoutPage = ({cart}) => {
                                                 <span className="update-quantity-link link-primary">
                                                     Update
                                                 </span>
-                                                <span className="delete-quantity-link link-primary">
+                                                <span className="delete-quantity-link link-primary"
+                                                onClick={()=>{
+                                                axios.post('/api/cart-items', {
+                                                    productId: product.id,
+                                                    quantity: 0
+                                                });}}>
                                                     Delete
                                                 </span>
+
+                                                <button className="add-to-cart-button button-primary"
+                                                onClick={()=>{
+                                                axios.delete('/api/cart-items:productId', {
+                                                    productId: product.id,
+                                                    quantity: 0
+                                                });
+                                                }}>Del</button>
                                             </div>
                                         </div>
 
